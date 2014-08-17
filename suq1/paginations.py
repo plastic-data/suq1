@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-# Suq1 -- An ad hoc Python toolbox
+# Suq1 -- An ad hoc Python toolbox for a web service
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2009, 2010, 2011, 2012 Easter-eggs & Emmanuel Raviart

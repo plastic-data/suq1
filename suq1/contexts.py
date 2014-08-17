@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-# Suq1 -- An ad hoc Python toolbox
+# Suq1 -- An ad hoc Python toolbox for a web service
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2009, 2010, 2011, 2012 Easter-eggs & Emmanuel Raviart
@@ -29,14 +29,17 @@
 
 import gettext
 import os
-import pkg_resources
 
+import pkg_resources
 import webob
 
-from . import conv
+from . import conv  # Overridden with real conv during init_module().
 
 
-__all__ = ['Ctx']
+__all__ = [
+    'Ctx',
+    'init_module',
+    ]
 
 
 class Ctx(conv.State):
@@ -48,6 +51,10 @@ class Ctx(conv.State):
         req = None,
         )
     env_keys = ('_lang', '_translator')
+    translators_infos = [
+        ('biryani1', os.path.join(pkg_resources.get_distribution('biryani1').location, 'biryani1', 'i18n')),
+        ('suq1', os.path.join(pkg_resources.get_distribution('suq1').location, 'suq1', 'i18n')),
+        ]
 
     def __init__(self, req = None):
         if req is not None:
@@ -173,16 +180,24 @@ class Ctx(conv.State):
             if not isinstance(languages, list):
                 languages = [languages]
             translator = gettext.NullTranslations()
-            for name, i18n_dir in [
-                    ('biryani1', os.path.join(pkg_resources.get_distribution('biryani1').location, 'biryani1', 'i18n')),
-                    ('suq1', os.path.join(pkg_resources.get_distribution('suq1').location, 'suq1', 'i18n')),
-                    ]:
+            for name, i18n_dir in object.__getattribute__(self, 'translators_infos'):
                 if i18n_dir is not None:
                     translator = new_translator(name, i18n_dir, languages, fallback = translator)
             translator = new_translator(self.conf['package_name'], self.conf['i18n_dir'], languages,
                 fallback = translator)
             self._translator = translator
         return self._translator
+
+    @property
+    def ungettext(self):
+        return self.translator.ungettext
+
+
+def init_module(components):
+    global conv
+    conv = components['conv']
+    if Ctx.__bases__ != (conv.State,):
+        Ctx.__bases__ = (conv.State,)
 
 
 def new_translator(domain, localedir, languages, fallback = None):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-# Suq1 -- An ad hoc Python toolbox
+# Suq1 -- An ad hoc Python toolbox for a web service
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2009, 2010, 2011, 2012 Easter-eggs & Emmanuel Raviart
@@ -35,6 +35,13 @@ from biryani1.jsonconv import *
 from biryani1.objectconv import *
 from biryani1.states import default_state, State
 from biryani1.uuidconv import *
+
+
+input_to_words = pipe(
+    input_to_slug,
+    function(lambda slug: sorted(set(slug.split(u'-')))),
+    empty_to_none,
+    )
 
 
 def method(method_name, *args, **kwargs):

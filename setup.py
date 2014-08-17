@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-# Suq1 -- An ad hoc Python toolbox
+# Suq1 -- An ad hoc Python toolbox for a web service
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2009, 2010, 2011, 2012 Easter-eggs & Emmanuel Raviart
@@ -25,7 +25,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""An ad hoc Python toolbox
+"""An ad hoc Python toolbox for a web service
 
 Suq1 is build for my own specific needs. If you want to improve it for other projects, fork it and rename it.
 """
@@ -55,7 +55,7 @@ setup(
     author_email = 'emmanuel@raviart.com',
     classifiers = [classifier for classifier in classifiers.split('\n') if classifier],
     description = doc_lines[0],
-    keywords = 'toolbox',
+    keywords = 'service toolbox web',
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
     url = 'https://github.com/eraviart/suq1',

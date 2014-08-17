@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-# Suq1 -- An ad hoc Python toolbox
+# Suq1 -- An ad hoc Python toolbox for a web service
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2009, 2010, 2011, 2012 Easter-eggs & Emmanuel Raviart
@@ -24,7 +24,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Decorators to wrap functions to make them WSGI applications.
+"""Decorators and functions to simplify use of webob for WSGI applications.
 
 The main decorator :class:`wsgify` turns a function into a WSGI application.
 """
@@ -37,8 +37,14 @@ import webob.dec
 import webob.exc
 
 
-N_ = lambda message: message
+__all__ = [
+    'handle_cross_origin_resource_sharing',
+    'init_module',
+    'respond_json',
+    'wsgify',
+    ]
 
+N_ = lambda message: message
 
 errors_title = {
     400: N_("Unable to Access"),
@@ -46,7 +52,6 @@ errors_title = {
     403: N_("Access Denied"),
     404: N_("Unable to Access"),
     }
-
 
 wsgify = webob.dec.wsgify
 
@@ -132,3 +137,8 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
         text = u'{0}({1})'.format(jsonp, text)
     response.text = text
     return response
+
+
+def init_module(components):
+    pass
+

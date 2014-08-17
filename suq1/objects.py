@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-# Suq1 -- An ad hoc Python toolbox
+# Suq1 -- An ad hoc Python toolbox for a web service
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2009, 2010, 2011, 2012 Easter-eggs & Emmanuel Raviart
@@ -33,7 +33,9 @@ import datetime
 from bson import objectid
 import pymongo
 
-from . import contexts, conv
+
+contexts = None  # from ??? import contexts
+conv = None  # from ??? import conv
 
 
 # Level-1 Classes
@@ -350,3 +352,15 @@ class ActivityStreamWrapper(SmartWrapper):
         self.updated = bson['updated'] = updated = datetime.datetime.utcnow()
         if self.published is None:
             self.published = bson['published'] = updated
+
+
+# Functions
+
+
+def init_module(components):
+    global contexts
+    model = components['contexts']
+    global conv
+    conv = components['conv']
+    Wrapper.db = components['db']
+
