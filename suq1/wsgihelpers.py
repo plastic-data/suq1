@@ -38,6 +38,7 @@ import webob.exc
 
 
 __all__ = [
+    'errors_title',
     'handle_cross_origin_resource_sharing',
     'init_module',
     'respond_json',

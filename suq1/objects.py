@@ -359,7 +359,7 @@ class ActivityStreamWrapper(SmartWrapper):
 
 def init_module(components):
     global contexts
-    model = components['contexts']
+    contexts = components['contexts']
     global conv
     conv = components['conv']
     Wrapper.db = components['db']

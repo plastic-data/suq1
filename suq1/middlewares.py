@@ -67,7 +67,7 @@ def wrap_app(app):
 
     # Handle Python exceptions.
     if not conf['debug']:
-        app = ErrorMiddleware(app, global_conf, **conf['errorware'])
+        app = ErrorMiddleware(app, conf['global_conf'], **conf['errorware'])
 
     return app
 

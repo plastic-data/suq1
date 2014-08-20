@@ -30,6 +30,7 @@
 from biryani1.base64conv import *
 from biryani1.baseconv import *
 from biryani1.bsonconv import *
+from biryani1.bsonconv import convert_bson_to_json, convert_json_to_bson
 from biryani1.datetimeconv import *
 from biryani1.jsonconv import *
 from biryani1.objectconv import *

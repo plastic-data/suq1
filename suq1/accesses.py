@@ -30,7 +30,9 @@
 import calendar
 import collections
 import datetime
+import uuid
 
+from biryani1 import strings
 import pymongo
 
 from . import objects
@@ -81,8 +83,14 @@ class Access(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
         cls.ensure_index('expiration')
         cls.ensure_index('token', unique = True)
 
+    @property
+    def individual(self):
+        return self.account or self.client
+
     @classmethod
-    def make_token_to_instance(cls):
+    def make_token_to_instance(cls, accept_account = False, accept_client = False):
+        assert accept_account or accept_client
+
         def token_to_instance(value, state = None):
             if value is None:
                 return value, None
@@ -102,6 +110,19 @@ class Access(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
                 return value, state._(u"No access with given token")
             if self.blocked:
                 return self, state._(u"Access is blocked")
+
+            if not accept_account:
+                if self.account_id is not None:
+                    return self, state._(u"Expected a client token. Got an account token")
+                if self.client.blocked:
+                    return self, state._(u"Client is blocked")
+
+            if not accept_client:
+                if self.account_id is None:
+                    return self, state._(u"Expected an account token. Got a client token")
+                if self.account.blocked:
+                    return self, state._(u"Account is blocked")
+
             return self, None
 
         return token_to_instance
@@ -114,16 +135,6 @@ class Access(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
                 ):
             self.delete(ctx)
 
-    def require_account_access(self, state):
-        if self.account_id is None:
-            return self, state._(u"Expected an access token. Got a client token")
-        return self, None
-
-    def require_client_access(self, state):
-        if self.account_id is not None:
-            return self, state._(u"Expected a client token. Got an access token")
-        return self, None
-
     def to_bson(self):
         self_bson = self.__dict__.copy()
         self_bson.pop('_account', None)
@@ -134,6 +145,8 @@ class Access(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
         value, error = conv.object_to_clean_dict(self, state = state)
         if error is not None:
             return value, error
+        value.pop('_account', None)
+        value.pop('_client', None)
         if value.get('account_id') is not None:
             value['account_id'] = unicode(value['account_id'])
         if value.get('client_id') is not None:
@@ -190,23 +203,6 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
 #        cls.ensure_index('updated')
         cls.ensure_index('url_name', sparse = True)
         cls.ensure_index('words')
-
-#    @classmethod
-#    def make_access_token_to_instance(cls):
-#        def access_token_to_instance(value, state = None):
-#            if value is None:
-#                return value, None
-#            if state is None:
-#                state = conv.default_state
-#            access = Access.make_token_to_instance(value, state = state)
-#            if access is None:
-#                return value, state._(u"No access with given token")
-#            self = cls.find_one(access.account_id, as_class = collections.OrderedDict)
-#            if self is None:
-#                return value, state._(u"No account with given access token")
-#            return self, None
-
-#        return access_token_to_instance
 
     @classmethod
     def make_str_to_instance(cls):
@@ -306,7 +302,6 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
     name = None
     owner_id = None
     symbol = None
-    token = None
     url_name = None
 
     def before_delete(self, ctx, old_bson):
@@ -335,7 +330,6 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
     @classmethod
     def ensure_indexes(cls):
         cls.ensure_index('symbol', sparse = True, unique = True)
-        cls.ensure_index('token', unique = True)
         cls.ensure_index([('owner_id', pymongo.ASCENDING), ('url_name', pymongo.ASCENDING)], unique = True)
         cls.ensure_index('words')
 
@@ -356,27 +350,6 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
 
         return str_to_instance
 
-#    @classmethod
-#    def make_token_to_instance(cls):
-#        def token_to_instance(value, state = None):
-#            if value is None:
-#                return value, None
-#            if state is None:
-#                state = conv.default_state
-#            self = cls.find_one(
-#                dict(
-#                    token = value,
-#                    ),
-#                as_class = collections.OrderedDict,
-#                )
-#            if self is None:
-#                return value, state._(u"No client with given token")
-#            if self.blocked:
-#                return self, state._(u"Client is blocked")
-#            return self, None
-
-#        return token_to_instance
-
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)
         if error is not None:
@@ -393,6 +366,42 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
             value['updated'] = int(calendar.timegm(value['updated'].timetuple()) * 1000)
         value.pop('words', None)
         return value, None
+
+    @classmethod
+    def upsert_with_access(cls, ctx, name, symbol):
+        self = cls.find_one(dict(symbol = symbol), as_class = collections.OrderedDict)
+        if self is None:
+            self = cls(
+                name = name,
+                symbol = symbol,
+                token = unicode(uuid.uuid4()),
+                )
+        else:
+            self.set_attributes(
+                name = name,
+                )
+        self.compute_attributes()
+        self.save(ctx, safe = True)
+
+        access = model.Access.find_one(
+            dict(
+                account_id = {'$exists': False},
+                blocked = {'$exists': False},
+                client_id = self._id,
+                expiration = {'$exists': False},
+                ),
+            as_class = collections.OrderedDict,
+            )
+        if access is None:
+            access = model.Access(
+                client_id = self._id,
+                token = unicode(uuid.uuid4()),
+                )
+            access.save(ctx, safe = True)
+        access._account = None
+        access._client = self
+
+        return access
 
 
 def init_module(components):

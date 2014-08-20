@@ -47,7 +47,7 @@ __all__ = [
     ]
 
 application_url = None  # Set to req.application_url as soon as application is called.
-conf = None ## from ??? import conf
+conf = None  # from ??? import conf
 contexts = None  # from ??? import contexts
 
 
@@ -101,27 +101,27 @@ def init_module(components):
     contexts = components['contexts']
 
 
-#def iter_full_urls(ctx, *path, **query):
-#    assert application_url is not None
-#    host_urls = conf['host_urls']
-#    if host_urls is None:
-#        yield get_full_url(ctx, *path, **query)
-#    else:
-#        path = [
-#            urllib.quote(unicode(sub_fragment).encode('utf-8'), safe = ',/:').decode('utf-8')
-#            for fragment in urlparse.urlsplit(application_url).path.split('/') + path
-#            if fragment
-#            for sub_fragment in unicode(fragment).split(u'/')
-#            if sub_fragment
-#            ]
-#        query = dict(
-#            (str(name), strings.deep_encode(value))
-#            for name, value in sorted(query.iteritems())
-#            if value not in (None, [], (), '')
-#            )
-#        for host_url in host_urls:
-#            yield u'{0}{1}{2}'.format(host_url, u'/'.join(path),
-#                ('?' + urllib.urlencode(query, doseq = True)) if query else '')
+#    def iter_full_urls(ctx, *path, **query):
+#        assert application_url is not None
+#        host_urls = conf['host_urls']
+#        if host_urls is None:
+#            yield get_full_url(ctx, *path, **query)
+#        else:
+#            path = [
+#                urllib.quote(unicode(sub_fragment).encode('utf-8'), safe = ',/:').decode('utf-8')
+#                for fragment in urlparse.urlsplit(application_url).path.split('/') + path
+#                if fragment
+#                for sub_fragment in unicode(fragment).split(u'/')
+#                if sub_fragment
+#                ]
+#            query = dict(
+#                (str(name), strings.deep_encode(value))
+#                for name, value in sorted(query.iteritems())
+#                if value not in (None, [], (), '')
+#                )
+#            for host_url in host_urls:
+#                yield u'{0}{1}{2}'.format(host_url, u'/'.join(path),
+#                    ('?' + urllib.urlencode(query, doseq = True)) if query else '')
 
 
 def make_router(*routings):
