@@ -271,9 +271,9 @@ class Wrapper(object):
             self._id = bson['_id']
         return result
 
-    @classmethod
-    def update(cls, *args, **kwargs):
-        return cls.get_collection().update(*args, **kwargs)
+    def update(self, *args, **kwargs):
+        assert self._id is not None
+        return self.get_collection().update(dict(_id = self._id), *args, **kwargs)
 
 
 # Level-2 Classes
