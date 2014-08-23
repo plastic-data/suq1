@@ -205,27 +205,24 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         cls.ensure_index('words')
 
     @classmethod
-    def make_str_to_instance(cls):
-        def str_to_instance(value, state = None):
-            if value is None:
-                return value, None
-            if state is None:
-                state = conv.default_state
-            id, error = conv.str_to_object_id(value, state = state)
-            if id is not None and error is None:
-                self = cls.find_one(id, as_class = collections.OrderedDict)
-                if self is None:
-                    return id, state._(u"No account with given ID")
-            else:
-                email, error = conv.str_to_email(value, state = state)
-                if email is None or error is not None:
-                    return email, error
-                self = cls.find_one(dict(email = email), as_class = collections.OrderedDict)
-                if self is None:
-                    return email, state._(u"No account with given email")
-            return self, None
-
-        return str_to_instance
+    def str_to_instance(cls, value, state = None):
+        if value is None:
+            return value, None
+        if state is None:
+            state = conv.default_state
+        id, error = conv.str_to_object_id(value, state = state)
+        if id is not None and error is None:
+            self = cls.find_one(id, as_class = collections.OrderedDict)
+            if self is None:
+                return id, state._(u"No account with given ID")
+        else:
+            email, error = conv.str_to_email(value, state = state)
+            if email is None or error is not None:
+                return email, error
+            self = cls.find_one(dict(email = email), as_class = collections.OrderedDict)
+            if self is None:
+                return email, state._(u"No account with given email")
+        return self, None
 
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)
@@ -334,21 +331,18 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
         cls.ensure_index('words')
 
     @classmethod
-    def make_str_to_instance(cls):
-        def str_to_instance(value, state = None):
-            if value is None:
-                return value, None
-            if state is None:
-                state = conv.default_state
-            id, error = conv.str_to_object_id(value, state = state)
-            if id is None or error is not None:
-                return id, error
-            self = cls.find_one(id, as_class = collections.OrderedDict)
-            if self is None:
-                return id, state._(u"No client with given ID")
-            return self, None
-
-        return str_to_instance
+    def str_to_instance(cls, value, state = None):
+        if value is None:
+            return value, None
+        if state is None:
+            state = conv.default_state
+        id, error = conv.str_to_object_id(value, state = state)
+        if id is None or error is not None:
+            return id, error
+        self = cls.find_one(id, as_class = collections.OrderedDict)
+        if self is None:
+            return id, state._(u"No client with given ID")
+        return self, None
 
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)

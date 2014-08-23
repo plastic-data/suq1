@@ -250,7 +250,7 @@ def api1_upsert_access(req):
             account = conv.pipe(
                 conv.test_isinstance(basestring),
                 conv.cleanup_line,
-                model.Account.make_str_to_instance(),
+                model.Account.str_to_instance,
                 conv.not_none,
                 ),
             context = conv.test_isinstance(basestring),  # For asynchronous calls
