@@ -275,14 +275,7 @@ def api1_upsert_access(req):
 
     account = data['account']
     client = data['access_token'].client
-    access = model.Access.find_one(
-        dict(
-            account_id = account._id,
-            blocked = {'$exists': False},
-            client_id = client._id,
-            expiration = {'$exists': False},
-            ),
-        as_class = collections.OrderedDict)
+    access = account.get_valid_permanent_access(client = client)
     if access is None:
         access = model.Access(
             account_id = account._id,
@@ -423,15 +416,7 @@ def api1_upsert_client(req):
             unicode(json.dumps(client_json, encoding = 'utf-8', ensure_ascii = False, indent = 2)).encode('utf-8'),
             ])
 
-    access = model.Access.find_one(
-        dict(
-            account_id = {'$exists': False},
-            blocked = {'$exists': False},
-            client_id = client._id,
-            expiration = {'$exists': False},
-            ),
-        as_class = collections.OrderedDict,
-        )
+    access = client.get_valid_permanent_access()
     if access is None:
         access = model.Access(
             client_id = client._id,

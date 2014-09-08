@@ -204,6 +204,17 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         cls.ensure_index('url_name', sparse = True)
         cls.ensure_index('words')
 
+    def get_valid_permanent_access(self, client = None):
+        return model.Access.find_one(
+            dict(
+                account_id = self._id,
+                blocked = {'$exists': False},
+                client_id = client._id if client is not None else None,
+                expiration = {'$exists': False},
+                ),
+            as_class = collections.OrderedDict,
+            )
+
     @classmethod
     def str_to_instance(cls, value, state = None):
         if value is None:
@@ -324,6 +335,19 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
 
         return self
 
+    def get_valid_permanent_access(self, client = None):
+        # Note:  client parameter is not used, but is kept for compatibility with method
+        # Account.get_valid_permanent_access.
+        return model.Access.find_one(
+            dict(
+                account_id = {'$exists': False},
+                blocked = {'$exists': False},
+                client_id = self._id,
+                expiration = {'$exists': False},
+                ),
+            as_class = collections.OrderedDict,
+            )
+
     @classmethod
     def ensure_indexes(cls):
         cls.ensure_index('symbol', sparse = True, unique = True)
@@ -377,15 +401,7 @@ class Client(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obje
         self.compute_attributes()
         self.save(ctx, safe = True)
 
-        access = model.Access.find_one(
-            dict(
-                account_id = {'$exists': False},
-                blocked = {'$exists': False},
-                client_id = self._id,
-                expiration = {'$exists': False},
-                ),
-            as_class = collections.OrderedDict,
-            )
+        access = self.get_valid_permanent_access()
         if access is None:
             access = model.Access(
                 client_id = self._id,
